@@ -59,9 +59,9 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
 ## 📸 Screenshots
 
-| Home Screen | Game Board | Winner Screen |
-| :---: | :---: | :---: |
-| ![Home](./assets/ludoHome.png) | ![Board](./assets/ludo_game.png) | ![With Computer](./assets/ludo_com.png) | ![Tokens](./assets/ludo_token.png)
+| Home Screen | Game Board | With Computer | Tokens 
+| :---: | :---: | :---: | :---: |
+| ![Home](./assets/ludoHome.png) | ![Board](./assets/ludo_game.png) | ![With Computer](./assets/ludo_com.png) | ![Tokens](./assets/ludo_token.png).
 
 ## 🤝 Contributing
 
