@@ -61,8 +61,7 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
 | Home Screen | Game Board | Winner Screen |
 | :---: | :---: | :---: |
-| ![Home](./assets/preview.png) | ![Board](./assets/preview.png) | ![Win](./assets/preview.png) |
-*(Note: Replace with actual screenshots as you develop further)*
+| ![Home](./assets/ludoHome.png) | ![Board](./assets/ludo_game.png) | ![With Computer](./assets/ludo_com.png) | ![Tokens](./assets/ludo_token.png)
 
 ## 🤝 Contributing
 
