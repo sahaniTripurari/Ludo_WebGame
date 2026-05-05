@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Ludo Royale — Premium Board Game</title>
+  <meta name="description"
+    content="Play Ludo Royale, a premium classic board game with stunning visuals, smooth animations, and multiple game modes. Challenge AI or play with friends!">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='16' height='16' rx='3' fill='%23E74C3C'/><rect x='16' width='16' height='16' rx='3' fill='%232980B9'/><rect y='16' width='16' height='16' rx='3' fill='%2327AE60'/><rect x='16' y='16' width='16' height='16' rx='3' fill='%23F1C40F'/></svg>">
+</head>
+
+<body>
+  <!-- ============ PARTICLES BACKGROUND ============ -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- ============ SCREEN: HOME ============ -->
+  <div class="screen active" id="screen-home">
+    <div class="home-container">
+      <!-- Profile bar -->
+      <div class="profile-bar" id="profile-bar">
+        <div class="profile-avatar" id="profile-avatar">
+          <span class="avatar-letter">P</span>
+          <span class="profile-level">Lv.1</span>
+        </div>
+        <div class="profile-info">
+          <span class="profile-name" id="profile-name">Player</span>
+          <div class="profile-coins">
+            <span class="coin-icon">🪙</span>
+            <span class="coin-count" id="coin-count">5,000</span>
+          </div>
+        </div>
+        <button class="btn-icon btn-settings" id="btn-settings" title="Settings">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Logo -->
+      <div class="logo-section">
+        <div class="logo-crown">👑</div>
+        <h1 class="logo-title">LUDO<span class="logo-accent">Royale</span></h1>
+        <p class="logo-subtitle">The King of Board Games</p>
+      </div>
+
+      <!-- Main Menu Buttons -->
+      <div class="menu-grid">
+        <button class="menu-btn menu-btn-primary disabled-mode" id="btn-online" disabled>
+          <div class="menu-btn-icon">🌐</div>
+          <div class="menu-btn-label">Online</div>
+          <div class="menu-btn-desc">Play with players worldwide</div>
+          <span class="badge-soon">Soon</span>
+        </button>
+        <button class="menu-btn menu-btn-primary disabled-mode" id="btn-teamup" disabled>
+          <div class="menu-btn-icon">🤝</div>
+          <div class="menu-btn-label">Team Up</div>
+          <div class="menu-btn-desc">2v2 team battles</div>
+          <span class="badge-soon">Soon</span>
+        </button>
+        <button class="menu-btn menu-btn-primary disabled-mode" id="btn-friends" disabled>
+          <div class="menu-btn-icon">👥</div>
+          <div class="menu-btn-label">Friends</div>
+          <div class="menu-btn-desc">Invite & play with friends</div>
+          <span class="badge-soon">Soon</span>
+        </button>
+        <button class="menu-btn menu-btn-accent" id="btn-vs-computer">
+          <div class="menu-btn-icon">🆚</div>
+          <div class="menu-btn-label">Computer</div>
+          <div class="menu-btn-desc">Challenge the AI</div>
+        </button>
+        <button class="menu-btn menu-btn-accent" id="btn-pass-n-play">
+          <div class="menu-btn-icon">🎮</div>
+          <div class="menu-btn-label">Pass N Play</div>
+          <div class="menu-btn-desc">Local Multiplayer</div>
+        </button>
+      </div>
+
+      <!-- Sound toggle -->
+      <button class="btn-sound" id="btn-sound" title="Toggle Sound">
+        <svg id="sound-on-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+        </svg>
+        <svg id="sound-off-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+          <path
+            d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: VS COMPUTER SETUP ============ -->
+  <div class="screen" id="screen-vs-computer">
+    <div class="setup-container">
+      <button class="btn-back" id="btn-back-vs"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg></button>
+      <h2 class="setup-title">VS Computer</h2>
+      <p class="setup-subtitle">Choose your challenge</p>
+
+      <div class="vs-options">
+        <button class="vs-card" data-opponents="1">
+          <div class="vs-card-icon">🧑‍💻</div>
+          <div class="vs-card-label">1 vs 1</div>
+          <div class="vs-card-desc">You vs 1 Computer</div>
+        </button>
+        <button class="vs-card" data-opponents="3">
+          <div class="vs-card-icon">🏟️</div>
+          <div class="vs-card-label">1 vs 3</div>
+          <div class="vs-card-desc">You vs 3 Computers</div>
+        </button>
+      </div>
+
+      <div class="difficulty-section">
+        <h3 class="difficulty-title">AI Difficulty</h3>
+        <div class="difficulty-pills">
+          <button class="pill-btn active" data-difficulty="easy">😊 Easy</button>
+          <button class="pill-btn" data-difficulty="medium">🧠 Medium</button>
+          <button class="pill-btn" data-difficulty="hard">🔥 Hard</button>
+        </div>
+      </div>
+
+      <button class="btn-next btn-glow" id="btn-next-vs">Next →</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: PASS N PLAY SETUP ============ -->
+  <div class="screen" id="screen-pass-n-play">
+    <div class="setup-container">
+      <button class="btn-back" id="btn-back-pnp"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg></button>
+      <h2 class="setup-title">Pass N Play</h2>
+      <p class="setup-subtitle">Local Multiplayer</p>
+
+      <div class="player-count-section">
+        <h3 class="section-label">Number of Players</h3>
+        <div class="player-count-pills">
+          <button class="pill-btn active" data-players="2">2P</button>
+          <button class="pill-btn" data-players="3">3P</button>
+          <button class="pill-btn" data-players="4">4P</button>
+        </div>
+      </div>
+
+      <button class="btn-next btn-glow" id="btn-next-pnp">Next →</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: TOKEN SELECTION ============ -->
+  <div class="screen" id="screen-tokens">
+    <div class="setup-container">
+      <button class="btn-back" id="btn-back-tokens"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg></button>
+      <h2 class="setup-title">Select Token</h2>
+      <p class="setup-subtitle">Choose your style</p>
+
+      <div class="token-carousel" id="token-carousel">
+        <div class="token-option selected" data-token="classic">
+          <div class="token-preview classic-preview">
+            <div class="preview-token"></div>
+          </div>
+          <span class="token-name">Classic</span>
+          <span class="token-badge free">Free</span>
+        </div>
+        <div class="token-option" data-token="crown">
+          <div class="token-preview crown-preview">
+            <div class="preview-token">👑</div>
+          </div>
+          <span class="token-name">Crown</span>
+          <span class="token-badge free">Free</span>
+        </div>
+        <div class="token-option" data-token="star">
+          <div class="token-preview star-preview">
+            <div class="preview-token">⭐</div>
+          </div>
+          <span class="token-name">Star</span>
+          <span class="token-badge free">Free</span>
+        </div>
+        <div class="token-option" data-token="diamond">
+          <div class="token-preview diamond-preview">
+            <div class="preview-token">💎</div>
+          </div>
+          <span class="token-name">Diamond</span>
+          <span class="token-badge free">Free</span>
+        </div>
+        <div class="token-option locked" data-token="fire">
+          <div class="token-preview fire-preview">
+            <div class="preview-token">🔥</div>
+          </div>
+          <span class="token-name">Fire</span>
+          <span class="token-badge locked-badge">🔒 2,000</span>
+        </div>
+        <div class="token-option locked" data-token="rocket">
+          <div class="token-preview rocket-preview">
+            <div class="preview-token">🚀</div>
+          </div>
+          <span class="token-name">Rocket</span>
+          <span class="token-badge locked-badge">🔒 5,000</span>
+        </div>
+      </div>
+
+      <button class="btn-next btn-glow" id="btn-next-tokens">Next →</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: PLAYER SETUP ============ -->
+  <div class="screen" id="screen-players">
+    <div class="setup-container">
+      <button class="btn-back" id="btn-back-players"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg></button>
+      <h2 class="setup-title">Players</h2>
+      <p class="setup-subtitle">Set up your game</p>
+
+      <div class="players-list" id="players-list">
+        <!-- Dynamically generated -->
+      </div>
+
+      <button class="btn-play btn-glow" id="btn-start-game">🎲 Play!</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN: GAME BOARD ============ -->
+  <div class="screen" id="screen-game">
+    <div class="game-wrapper" id="game-wrapper">
+      <!-- Top HUD -->
+      <div class="game-hud" id="game-hud">
+        <button class="btn-icon btn-menu-toggle" id="btn-menu-toggle" title="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+          </svg>
+        </button>
+        <div class="hud-turn-indicator" id="hud-turn-indicator">
+          <span class="hud-turn-dot" id="hud-turn-dot"></span>
+          <span class="hud-turn-text" id="hud-turn-text">Your turn</span>
+        </div>
+        <button class="btn-icon btn-sound-game" id="btn-sound-game" title="Toggle Sound">
+          <svg id="sound-game-on" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+          </svg>
+          <svg id="sound-game-off" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <path
+              d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Player info panels -->
+      <div class="player-panels" id="player-panels">
+        <!-- Dynamically generated -->
+      </div>
+
+      <!-- Board container -->
+      <div class="board-area" id="board-area">
+        <canvas id="board" width="660" height="660"></canvas>
+        <!-- Dice overlay on board -->
+        <div class="dice-container" id="dice-container">
+          <div class="dice-box" id="dice-box" title="Click to roll">
+            <div class="dice-face" id="dice-face">
+              <div class="dot-container" id="dot-container"></div>
+            </div>
+          </div>
+          <div class="dice-label" id="dice-label">Tap to roll</div>
+        </div>
+      </div>
+
+      <!-- Bottom game bar -->
+      <div class="game-action-bar" id="game-action-bar">
+        <div class="game-bottom-menu">
+          <button class="game-bottom-btn" id="btn-remove-player" title="Remove Player">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            Remove Player
+          </button>
+          <button class="game-bottom-btn" id="btn-exit-ingame" title="Exit">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            Exit
+          </button>
+        </div>
+        <button class="btn-roll-main" id="btn-roll" title="Roll Dice">🎲 Roll</button>
+        <button class="btn-icon btn-menu-bottom" id="btn-menu-bottom" title="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: IN-GAME MENU ============ -->
+  <div class="overlay" id="overlay-menu">
+    <div class="overlay-card menu-card">
+      <h3 class="overlay-title">Game Menu</h3>
+      <div class="menu-options">
+        <button class="menu-option-btn" id="btn-restart-game">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+          </svg>
+          Restart Game
+        </button>
+        <button class="menu-option-btn" id="btn-exit-game">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+          </svg>
+          Exit to Menu
+        </button>
+      </div>
+      <button class="btn-close-overlay" id="btn-close-menu">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: WIN ============ -->
+  <div class="overlay" id="overlay-win">
+    <div class="overlay-card win-card">
+      <div class="win-confetti" id="win-confetti"></div>
+      <div class="win-trophy">🏆</div>
+      <h2 class="win-title" id="win-title">Victory!</h2>
+      <p class="win-subtitle" id="win-subtitle">Congratulations!</p>
+      <div class="win-stats" id="win-stats">
+        <div class="win-stat">
+          <span class="win-stat-value" id="win-coins">+100</span>
+          <span class="win-stat-label">Coins</span>
+        </div>
+      </div>
+      <div class="win-actions">
+        <button class="btn-play-again btn-glow" id="btn-play-again">🔄 Play Again</button>
+        <button class="btn-home" id="btn-go-home">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OVERLAY: SETTINGS ============ -->
+  <div class="overlay" id="overlay-settings">
+    <div class="overlay-card settings-card">
+      <h3 class="overlay-title">Settings</h3>
+      <div class="settings-list">
+        <div class="setting-row">
+          <span class="setting-label">🎵 Music</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-music" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">🔊 Sound Effects</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-sfx" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">📳 Vibration</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-vibration" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-profile">
+        <h4>Player Name</h4>
+        <input type="text" class="input-name" id="settings-name" value="Player" maxlength="15"
+          placeholder="Enter your name">
+      </div>
+      <button class="btn-close-overlay" id="btn-close-settings">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- ============ TOAST ============ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script src="js/audio.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
