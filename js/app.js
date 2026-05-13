@@ -111,14 +111,12 @@
         : `Computer ${i}`;
 
       const card = document.createElement('div');
-      card.className = 'player-card';
-      card.dataset.index = i;
+      card.className = 'player-setup-card';
+      card.style.borderLeftColor = Board.COLORS[color].main;
       card.innerHTML = `
-        <div class="player-color-dot" style="background:${Board.COLORS[color].main}"></div>
-        <div class="player-card-info">
-          <input type="text" class="input-name player-name-input" value="${defaultName}" maxlength="12" data-index="${i}" ${!isHuman ? 'disabled' : ''}>
-          <div class="player-card-type">${isHuman ? '👤 Human' : '🤖 AI'}</div>
-        </div>
+        <div class="player-color-dot" style="width:12px;height:12px;border-radius:50%;background:${Board.COLORS[color].main}"></div>
+        <input type="text" class="input-name player-name-input" value="${defaultName}" maxlength="12" data-index="${i}" ${!isHuman ? 'disabled' : ''}>
+        <div class="player-type-label" style="font-size:0.7rem;opacity:0.7">${isHuman ? '👤' : '🤖'}</div>
       `;
       list.appendChild(card);
     }
@@ -172,8 +170,6 @@
 
   // ===== GAME EVENT LISTENERS =====
   Board.canvas.addEventListener('click', (e) => Game.handleBoardClick(e));
-  document.getElementById('dice-box').addEventListener('click', () => Game.rollDice());
-  document.getElementById('btn-roll').addEventListener('click', () => Game.rollDice());
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); Game.rollDice(); }
@@ -225,34 +221,47 @@
     UI.showScreen('screen-home');
   });
 
-  // ===== SETTINGS =====
-  document.getElementById('btn-settings').addEventListener('click', () => UI.showOverlay('overlay-settings'));
-  document.getElementById('btn-close-settings').addEventListener('click', () => {
-    UI.hideOverlay('overlay-settings');
-    // Save name
-    const name = document.getElementById('settings-name').value.trim() || 'Player';
-    playerName = name;
-    try { localStorage.setItem('ludo_name', name); } catch(e) {}
-    const pn = document.getElementById('profile-name');
-    if (pn) pn.textContent = name;
-    const av = document.querySelector('.avatar-letter');
-    if (av) av.textContent = name.charAt(0).toUpperCase();
+  // ===== SETTINGS & AUDIO =====
+  document.getElementById('btn-settings-open')?.addEventListener('click', () => UI.showOverlay('overlay-settings'));
+  document.getElementById('btn-close-settings')?.addEventListener('click', () => UI.hideOverlay('overlay-settings'));
+  document.getElementById('btn-sound-toggle-main')?.addEventListener('click', () => {
+    const isMuted = !AudioEngine.musicOn;
+    AudioEngine.toggleMusic(!isMuted);
+    AudioEngine.toggleSfx(!isMuted);
+    updateAudioToggles(!isMuted);
   });
 
-  // Settings toggles
-  document.getElementById('toggle-music').addEventListener('change', (e) => AudioEngine.toggleMusic(e.target.checked));
-  document.getElementById('toggle-sfx').addEventListener('change', (e) => AudioEngine.toggleSfx(e.target.checked));
-
-  // ===== SOUND BUTTONS =====
-  function updateSoundIcons() {
-    const on = AudioEngine.musicOn && AudioEngine.sfxOn;
-    document.getElementById('sound-on-icon').style.display = on ? '' : 'none';
-    document.getElementById('sound-off-icon').style.display = on ? 'none' : '';
-    const gOn = document.getElementById('sound-game-on');
-    const gOff = document.getElementById('sound-game-off');
-    if (gOn) gOn.style.display = on ? '' : 'none';
-    if (gOff) gOff.style.display = on ? 'none' : '';
+  function updateAudioToggles(on) {
+    document.querySelectorAll('#toggle-music-home, #toggle-music-game').forEach(el => el.checked = on);
+    document.querySelectorAll('#toggle-sfx-home, #toggle-sfx-game').forEach(el => el.checked = on);
+    const btn = document.getElementById('btn-sound-toggle-main');
+    if (btn) btn.textContent = on ? '🔊' : '🔇';
   }
+
+  // Handle individual toggles
+  document.getElementById('toggle-music-home')?.addEventListener('change', (e) => {
+    AudioEngine.toggleMusic(e.target.checked);
+    document.getElementById('toggle-music-game').checked = e.target.checked;
+  });
+  document.getElementById('toggle-music-game')?.addEventListener('change', (e) => {
+    AudioEngine.toggleMusic(e.target.checked);
+    document.getElementById('toggle-music-home').checked = e.target.checked;
+  });
+  document.getElementById('toggle-sfx-home')?.addEventListener('change', (e) => {
+    AudioEngine.toggleSfx(e.target.checked);
+    document.getElementById('toggle-sfx-game').checked = e.target.checked;
+  });
+  document.getElementById('toggle-sfx-game')?.addEventListener('change', (e) => {
+    AudioEngine.toggleSfx(e.target.checked);
+    document.getElementById('toggle-sfx-home').checked = e.target.checked;
+  });
+
+  // Global click to init audio (needed for browser policy)
+  document.addEventListener('click', () => {
+    AudioEngine.init();
+    // Start music on first click if not playing
+    if (!AudioEngine.musicPlaying) AudioEngine.startMusic();
+  }, { once: true });
 
   document.getElementById('btn-sound').addEventListener('click', () => {
     const mute = AudioEngine.musicOn;

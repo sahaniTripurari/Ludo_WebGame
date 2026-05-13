@@ -3,9 +3,9 @@ const Game = (() => {
   let playerCount = 4, currentPlayer = 0, diceVal = 0;
   let rolled = false, canMove = false, sixCount = 0, gameOver = false;
   let tokens = [], animating = false;
-  let gameMode = 'vs-computer'; // 'vs-computer' or 'pass-n-play'
-  let humanPlayers = [0]; // indices of human players
-  let playerNames = ['You', 'Computer 2', 'Computer 3', 'Computer 4'];
+  let gameMode = 'vs-computer';
+  let humanPlayers = [0];
+  let playerNames = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
   let playerColors = ['red', 'green', 'yellow', 'blue'];
   let onStateChange = null, onWin = null, onToast = null;
 
@@ -13,7 +13,7 @@ const Game = (() => {
     gameMode = config.mode || 'vs-computer';
     playerCount = config.playerCount || 4;
     humanPlayers = config.humanPlayers || [0];
-    playerNames = config.names || ['You', 'Computer 2', 'Computer 3', 'Computer 4'];
+    playerNames = config.names || ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
     playerColors = config.colors || Board.PNAMES.slice(0, playerCount);
   }
 
@@ -46,11 +46,13 @@ const Game = (() => {
     if (rolled || gameOver || animating) return;
     diceVal = Math.floor(Math.random() * 6) + 1;
     rolled = true;
-    AudioEngine.diceRoll();
+    if (window.AudioEngine) AudioEngine.diceRoll();
 
-    const diceBox = document.getElementById('dice-box');
-    diceBox.classList.remove('pulse-dice');
-    diceBox.classList.add('rolling');
+    const diceBox = document.getElementById(`dice-box-${currentPlayer}`);
+    if (diceBox) {
+        diceBox.classList.remove('pulse-dice');
+        diceBox.classList.add('rolling');
+    }
 
     let count = 0;
     const interval = setInterval(() => {
@@ -58,7 +60,7 @@ const Game = (() => {
       count++;
       if (count >= 8) {
         clearInterval(interval);
-        diceBox.classList.remove('rolling');
+        if (diceBox) diceBox.classList.remove('rolling');
         renderDice(diceVal);
         afterRoll();
       }
@@ -68,14 +70,13 @@ const Game = (() => {
   function afterRoll() {
     if (diceVal === 6) sixCount++; else sixCount = 0;
     if (sixCount >= 3) {
-      showTurn("Three 6's! Turn forfeited.");
+      if (onToast) onToast("Three 6's! Turn forfeited.", 'var(--red)');
       sixCount = 0;
       setTimeout(() => nextTurn(), 1200);
       return;
     }
     const moves = getMovableTokens();
     if (moves.length === 0) {
-      showTurn(diceVal === 6 ? "No moves. Roll again!" : "No valid moves.");
       setTimeout(() => {
         if (diceVal === 6) {
           rolled = false; renderDice(0); pulseDice();
@@ -91,7 +92,7 @@ const Game = (() => {
     }
     if (moves.length === 1) { moveToken(moves[0]); return; }
     canMove = true;
-    showTurn("Select a token to move!");
+    if (onStateChange) onStateChange();
     redraw();
   }
 
@@ -107,9 +108,8 @@ const Game = (() => {
     if (prog === -1 && diceVal === 6) {
       tokens[pIdx][tIdx] = 0;
       checkCapture(pIdx, tIdx); redraw();
-      AudioEngine.tokenEnter();
+      if (window.AudioEngine) AudioEngine.tokenEnter();
       animating = false; rolled = false;
-      showTurn(isHuman(pIdx) ? "Token entered! 🎲 Roll again!" : `${playerNames[pIdx]} enters!`);
       renderDice(0);
       if (onStateChange) onStateChange();
       if (isHuman(pIdx)) pulseDice();
@@ -121,18 +121,17 @@ const Game = (() => {
     const stepInterval = setInterval(() => {
       step++;
       tokens[pIdx][tIdx] = prog + step;
-      AudioEngine.tokenMove();
+      if (window.AudioEngine) AudioEngine.tokenMove();
       redraw();
       if (step >= diceVal) {
         clearInterval(stepInterval);
         const newProg = tokens[pIdx][tIdx];
 
         if (newProg === 56) {
-          AudioEngine.tokenHome();
+          if (window.AudioEngine) AudioEngine.tokenHome();
           if (onToast) onToast(`${playerNames[pIdx]} token finished!`, Board.COLORS[color].main);
           if (checkWin(pIdx)) { animating = false; return; }
           animating = false; rolled = false;
-          showTurn(isHuman(pIdx) ? "Token home! 🎉 Roll again!" : `${playerNames[pIdx]} token home!`);
           renderDice(0); redraw();
           if (onStateChange) onStateChange();
           if (isHuman(pIdx)) pulseDice();
@@ -145,8 +144,6 @@ const Game = (() => {
 
         if (diceVal === 6 || captured) {
           rolled = false;
-          const msg = diceVal === 6 ? "Rolled 6" : "Captured";
-          showTurn(isHuman(pIdx) ? `${msg}! 🎲 Roll again!` : `${msg} — bonus turn!`);
           renderDice(0);
           if (onStateChange) onStateChange();
           if (isHuman(pIdx)) pulseDice();
@@ -171,8 +168,7 @@ const Game = (() => {
         if (oP < 0 || oP >= 51) continue;
         if ((Board.START_POS[Board.PNAMES[op]]+oP)%52 === absPos) {
           tokens[op][ot] = -1; captured = true;
-          AudioEngine.capture();
-          if (onToast) onToast(`${playerNames[pIdx]} captured ${playerNames[op]}!`, Board.COLORS[color].main);
+          if (window.AudioEngine) AudioEngine.capture();
         }
       }
     }
@@ -182,7 +178,7 @@ const Game = (() => {
   function checkWin(pIdx) {
     if (tokens[pIdx].every(p => p === 56)) {
       gameOver = true;
-      AudioEngine.win();
+      if (window.AudioEngine) AudioEngine.win();
       if (onWin) onWin(pIdx, playerNames[pIdx], Board.PNAMES[pIdx]);
       return true;
     }
@@ -200,23 +196,11 @@ const Game = (() => {
   }
 
   function updateTurn() {
+    if (onStateChange) onStateChange();
     const name = playerNames[currentPlayer];
-    const msg = isHuman(currentPlayer)
-      ? (gameMode === 'pass-n-play' ? `${name}'s turn — Roll!` : "Your turn — Roll the dice!")
-      : `${name}'s turn...`;
-    showTurn(msg);
-    if (isHuman(currentPlayer) && !rolled) pulseDice();
-  }
-
-  function showTurn(text) {
     const el = document.getElementById('hud-turn-text');
-    if (el) el.textContent = text;
-    const dot = document.getElementById('hud-turn-dot');
-    if (dot) {
-      const col = Board.COLORS[Board.PNAMES[currentPlayer]];
-      dot.style.background = col.main;
-      dot.style.boxShadow = `0 0 10px ${col.main}`;
-    }
+    if (el) el.textContent = isHuman(currentPlayer) ? `${name}'s turn!` : `${name} is thinking...`;
+    if (isHuman(currentPlayer) && !rolled) pulseDice();
   }
 
   function redraw() {
@@ -224,22 +208,28 @@ const Game = (() => {
   }
 
   function renderDice(val) {
-    const container = document.getElementById('dot-container');
-    if (!container) return;
-    container.innerHTML = '';
-    container.className = 'dot-container';
-    if (val < 1 || val > 6) {
-      container.textContent = '?';
-      container.style.cssText = 'font-size:1.5rem;font-weight:800;color:#999;display:flex;align-items:center;justify-content:center;';
-      return;
+    // Only render for active player
+    for (let i = 0; i < playerCount; i++) {
+        const container = document.getElementById(`dot-container-${i}`);
+        if (!container) continue;
+        container.innerHTML = '';
+        container.className = 'dot-container';
+        
+        if (i === currentPlayer) {
+            if (val >= 1 && val <= 6) {
+                container.classList.add('dots-' + val);
+                for (let j = 0; j < val; j++) {
+                    const d = document.createElement('div');
+                    d.className = 'dice-dot';
+                    container.appendChild(d);
+                }
+            }
+        }
     }
-    container.style.cssText = '';
-    container.classList.add('dots-' + val);
-    for (let i = 0; i < val; i++) { const d = document.createElement('div'); d.className = 'dice-dot'; container.appendChild(d); }
   }
 
   function pulseDice() {
-    const diceBox = document.getElementById('dice-box');
+    const diceBox = document.getElementById(`dice-box-${currentPlayer}`);
     if (!diceBox) return;
     diceBox.classList.remove('pulse-dice');
     void diceBox.offsetWidth;

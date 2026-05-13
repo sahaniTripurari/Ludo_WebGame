@@ -1,7 +1,7 @@
 // ===== PARTICLE BACKGROUND =====
 const Particles = (() => {
   const canvas = document.getElementById('particles-canvas');
-  if (!canvas) return { init(){}, resize(){} };
+  if (!canvas) return { init() { }, resize() { } };
   const c = canvas.getContext('2d');
   let W, H, particles = [];
 

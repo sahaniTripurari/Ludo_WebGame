@@ -4,7 +4,7 @@ const UI = (() => {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const screen = document.getElementById(id);
     if (screen) screen.classList.add('active');
-    AudioEngine.click();
+    if (window.AudioEngine) AudioEngine.click();
   }
 
   function showOverlay(id) {
@@ -17,83 +17,108 @@ const UI = (() => {
     if (el) el.classList.remove('show');
   }
 
-  function toast(text, color = '#43A047') {
+  function toast(text, color = 'var(--blue-l)') {
     const container = document.getElementById('toast-container');
     if (!container) return;
     const t = document.createElement('div');
     t.className = 'toast';
     t.textContent = text;
     t.style.background = color;
+    t.style.color = '#fff';
     container.appendChild(t);
     setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 2600);
   }
 
+  // Mapping Game player indices to HTML container IDs
+  // Game.js PNAMES order: ['red', 'green', 'yellow', 'blue']
+  // red:0 (BR), green:1 (BL), yellow:2 (TL), blue:3 (TR)
+  const BOX_MAP = {
+    0: 'player-box-1', // red -> Bottom Right
+    1: 'player-box-0', // green -> Bottom Left
+    2: 'player-box-2', // yellow -> Top Left
+    3: 'player-box-3', // blue -> Top Right
+  };
+
   function buildPlayerPanels(names, colors, count) {
-    const container = document.getElementById('player-panels');
-    if (!container) return;
-    container.innerHTML = '';
+    // Clear all boxes first
+    for (let i = 0; i < 4; i++) {
+        const container = document.getElementById(`player-box-${i}`);
+        if (container) {
+            container.innerHTML = '';
+            container.style.visibility = 'hidden';
+        }
+    }
+
     for (let i = 0; i < count; i++) {
-      const pp = document.createElement('div');
-      pp.className = 'pp';
-      pp.id = `pp-${i}`;
-      pp.innerHTML = `
-        <span class="pp-dot" style="background:${Board.COLORS[colors[i]].main}"></span>
-        <span class="pp-name">${names[i]}</span>
-        <span class="pp-home" id="pp-home-${i}">🏠 0/4</span>
+      const boxId = BOX_MAP[i];
+      const container = document.getElementById(boxId);
+      if (!container) continue;
+      container.style.visibility = 'visible';
+
+      const colorName = colors[i];
+      const col = Board.COLORS[colorName];
+
+      container.innerHTML = `
+        <div class="player-box" id="box-${i}">
+          <div class="player-info-side" style="background:${col.main}">
+            <div class="player-icon-mini">📍</div>
+          </div>
+          <div class="player-dice-side">
+            <div class="dice-box-mini" id="dice-box-${i}">
+              <div class="dot-container" id="dot-container-${i}"></div>
+            </div>
+          </div>
+          <div class="player-name-tag">${names[i]}</div>
+          <div class="pp-home" id="pp-home-${i}" style="position:absolute; top:2px; right:5px; font-size:10px; color:rgba(255,255,255,0.7)">0/4</div>
+        </div>
       `;
-      container.appendChild(pp);
+
+      // Wire click for the player's dice box
+      const diceBox = document.getElementById(`dice-box-${i}`);
+      diceBox.addEventListener('click', () => {
+          if (i === Game.currentPlayer) Game.rollDice();
+      });
     }
   }
 
   function updatePlayerPanels(currentPlayer, tokens, count) {
     for (let i = 0; i < count; i++) {
-      const pp = document.getElementById(`pp-${i}`);
-      if (pp) pp.classList.toggle('current', i === currentPlayer);
+      const box = document.getElementById(`box-${i}`);
+      if (box) box.classList.toggle('active', i === currentPlayer);
+      
       const home = document.getElementById(`pp-home-${i}`);
       if (home) {
         const finished = Board.getHomeCount(tokens, i);
-        home.textContent = `🏠 ${finished}/4`;
+        home.textContent = `${finished}/4`;
       }
     }
   }
 
   function updateDiceUI(rolled, canMove, isHuman) {
-    const btnRoll = document.getElementById('btn-roll');
-    const diceBox = document.getElementById('dice-box');
-    const diceLabel = document.getElementById('dice-label');
-    if (btnRoll) btnRoll.disabled = rolled || !isHuman;
-    if (diceBox) diceBox.classList.toggle('disabled', (rolled && !canMove) || !isHuman);
-    if (diceLabel) diceLabel.textContent = isHuman ? (rolled ? '' : 'Tap to roll') : '';
-  }
-
-  // Position dice near current player's corner
-  function positionDice(currentPlayer, playerCount) {
-    const dc = document.getElementById('dice-container');
-    if (!dc) return;
-    // Position dice at center-right of board by default
-    const positions = {
-      0: { bottom: '15%', right: '8%', top: 'auto', left: 'auto' },   // red - bottom right
-      1: { bottom: '15%', right: 'auto', top: 'auto', left: '8%' },   // green - bottom left
-      2: { bottom: 'auto', right: 'auto', top: '15%', left: '8%' },   // yellow - top left
-      3: { bottom: 'auto', right: '8%', top: '15%', left: 'auto' },   // blue - top right
-    };
-    const pos = positions[currentPlayer] || positions[0];
-    dc.style.top = pos.top;
-    dc.style.bottom = pos.bottom;
-    dc.style.left = pos.left;
-    dc.style.right = pos.right;
+    // We update all dice boxes, but only the current one matters
+    for (let i = 0; i < 4; i++) {
+        const diceBox = document.getElementById(`dice-box-${i}`);
+        if (!diceBox) continue;
+        
+        const isCurrent = (i === Game.currentPlayer);
+        diceBox.style.opacity = isCurrent ? '1' : '0.3';
+        diceBox.style.pointerEvents = (isCurrent && isHuman && !rolled) ? 'all' : 'none';
+        
+        if (isCurrent) {
+            diceBox.classList.toggle('pulse-dice', isHuman && !rolled);
+        } else {
+            diceBox.classList.remove('pulse-dice');
+        }
+    }
   }
 
   function showWin(name, color) {
     const title = document.getElementById('win-title');
-    const sub = document.getElementById('win-subtitle');
     if (title) {
-      title.textContent = `🎉 ${name} Wins!`;
-      title.style.setProperty('--win-color', Board.COLORS[color]?.main || '#FDD835');
+      title.textContent = `${name} Wins!`;
+      title.style.color = Board.COLORS[color]?.main || 'var(--gold)';
     }
-    if (sub) sub.textContent = 'What an amazing game!';
     showOverlay('overlay-win');
-    // Confetti effect
     createConfetti();
   }
 
@@ -101,36 +126,24 @@ const UI = (() => {
     const container = document.getElementById('win-confetti');
     if (!container) return;
     container.innerHTML = '';
-    const colors = ['#E53935','#1E88E5','#43A047','#FDD835','#FF6F00','#AB47BC','#fff'];
+    const colors = ['#E53935', '#1E88E5', '#43A047', '#FDD835', '#fff'];
     for (let i = 0; i < 50; i++) {
       const c = document.createElement('div');
       c.style.cssText = `
-        position:absolute;width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
-        background:${colors[Math.floor(Math.random()*colors.length)]};
-        left:${Math.random()*100}%;top:${-10-Math.random()*20}%;
-        border-radius:${Math.random()>0.5?'50%':'2px'};
-        animation:confettiFall ${1.5+Math.random()*2}s ease-in forwards;
-        animation-delay:${Math.random()*0.5}s;opacity:0.9;
+        position:absolute;width:${6 + Math.random() * 8}px;height:${6 + Math.random() * 8}px;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        left:${Math.random() * 100}%;top:${-10 - Math.random() * 20}%;
+        border-radius:50%;
+        animation:confettiFall ${2 + Math.random() * 2}s ease-in forwards;
+        animation-delay:${Math.random() * 0.5}s;
       `;
       container.appendChild(c);
-    }
-    // Add confetti keyframes if not present
-    if (!document.getElementById('confetti-style')) {
-      const style = document.createElement('style');
-      style.id = 'confetti-style';
-      style.textContent = `
-        @keyframes confettiFall {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(400px) rotate(${360+Math.random()*360}deg); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
     }
   }
 
   return {
     showScreen, showOverlay, hideOverlay, toast,
     buildPlayerPanels, updatePlayerPanels, updateDiceUI,
-    positionDice, showWin
+    showWin
   };
 })();
